@@ -1,59 +1,42 @@
-version: 2 # use CircleCI 2.0
-jobs: # a collection of steps
-  build: # runs not using Workflows must have a `build` job as entry point
-    
-    working_directory: ~/circleci-demo-java-spring # directory where steps will run
-
-    docker: # run the steps with Docker
-      - image: circleci/openjdk:8-jdk-stretch # ...with this image as the primary container; this is where all `steps` will run
-
-    steps: # a collection of executable commands
-
-      - checkout # check out source code to working directory
-
-      - restore_cache: # restore the saved cache after the first run or if `pom.xml` has changed
-          # Read about caching dependencies: https://circleci.com/docs/2.0/caching/
-          key: circleci-demo-java-spring-{{ checksum "pom.xml" }}
-      
-      - run: mvn dependency:go-offline # gets the project dependencies
-      
-      - save_cache: # saves the project dependencies
-          paths:
-            - ~/.m2
-          key: circleci-demo-java-spring-{{ checksum "pom.xml" }}
-      - run:
-          name: build package 
-          command: mvn package
-          #      - run:
-   
-  dev:
+# Java Gradle CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-java/ for more details
+#
+version: 2
+jobs:
+  build:
     docker:
-      - image: google/cloud-sdk
-    working_directory: ~/sharath
+      # specify the version you desire here
+      - image: circleci/openjdk:8-jdk
+
+      # Specify service dependencies here if necessary
+      # CircleCI maintains a library of pre-built images
+      # documented at https://circleci.com/docs/2.0/circleci-images/
+      # - image: circleci/postgres:9.4
+
+    working_directory: ~/repo
+
+    environment:
+      # Customize the JVM maximum heap limit
+      JVM_OPTS: -Xmx3200m
+      TERM: dumb
+
     steps:
       - checkout
-      - run: 
-          name: istall node
-          command: |
-            curl -sL https://deb.nodesource.com/setup_10.x | bash -
-            apt install nodejs && node -v && npm -v
-      - run:
-          name: add semanic
-          command: |
-            npm install -g yarn && yarn global add https://github.com/conveyal/maven-semantic-release.git#e5551beb4ec266bb520ae5ff155bc0d04acf8f05 semantic-release@15
-      - run: 
-          name: run 
-          command: |
-            semantic-release --publish @semantic-release/github,@conveyal/maven-semantic-release --verify-conditions @semantic-release/github,@conveyal/maven-semantic-release --verify-release @conveyal/maven-semantic-release --use-conveyal-workflow --dev-branch=master --skip-maven-deploy
-workflows:
-  version: 2
-  build:
-    jobs:
-      - build:
-          filters:
-            branches:
-              only: master
-      - dev:
-          filters:
-            branches:
-              only: master
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "build.gradle" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+
+      - run: gradle dependencies
+
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: v1-dependencies-{{ checksum "build.gradle" }}
+
+      # run tests!
+      - run: gradle test
