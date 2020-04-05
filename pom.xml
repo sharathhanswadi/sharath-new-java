@@ -24,9 +24,9 @@
   </developers>
   <!-- Define where the source code for this project lives -->
   <scm>
-    <connection>scm:git:https://github.com/evansiroky/maven-semantic-release-example.git</connection>
-    <developerConnection>scm:git:https://github.com/evansiroky/maven-semantic-release-example.git</developerConnection>
-    <url>https://github.com/evansiroky/maven-semantic-release-example</url>
+    <connection>scm:git:https://github.com/sharathhanswadi/sharath-new-java.git</connection>
+    <developerConnection>scm:git:https://github.com/sharathhanswadi/sharath-new-java.git</developerConnection>
+    <url>https://github.com/sharathhanswadi/sharath-new-java</url>
   </scm>
   <repositories>
     <repository>
